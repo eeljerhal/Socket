@@ -30,22 +30,25 @@ int main(int argc, char *argv[]) {
 	
     std::string servAddress; 
 	uint16_t    echoServPort;
-    std::string echoString;   
+    std::string echoString [2];		//http request
+	uint32_t echoStringLen [2];   // Determine input length
 	
 	servAddress   = argumentos->getArgs().SERVER;
 	echoServPort  = argumentos->getArgs().PORT;
-	echoString    = argumentos->getArgs().DATA;
+	echoString[0] = "GET / HTTP/1.1\r\n";	//http request 
+	echoString[1] = "Host: " + servAddress + "\r\n\r\n";	//host
+	echoStringLen[0] = echoString[0].length();	//largo de ambos strings
+	echoStringLen[1] = echoString[1].length();
 	
 	delete argumentos;
-	
-	uint32_t echoStringLen = echoString.length();   // Determine input length
 
 	try {
 		// Establish connection with the echo server
 		TCPSocket sock(servAddress, echoServPort);
 
 		// Send the string to the echo server
-		sock.send(echoString.c_str(), echoStringLen);
+		sock.send(echoString[0].c_str(), echoStringLen[0]);	//Se envía el request de http
+		sock.send(echoString[1].c_str(), echoStringLen[1]);	//y el host
 
 		char echoBuffer[RCVBUFSIZE + 1];    // Buffer for echo string + \0
 		uint32_t bytesReceived = 0;              // Bytes read on each recv()
@@ -53,7 +56,7 @@ int main(int argc, char *argv[]) {
 
 		// Receive the same string back from the server
 		std::cout << "Received: ";               // Setup to print the echoed string
-		while (totalBytesReceived < echoStringLen) {
+		while (true) {
 			// Receive up to the buffer size bytes from the sender
 			if ((bytesReceived = (sock.recv(echoBuffer, RCVBUFSIZE))) <= 0) {
 				std::cerr << "Unable to read";

@@ -7,20 +7,19 @@ extern int optind, opterr, optopt;
 class checkArgs {
 private:
 	// 1) Modificar esta sección
-	const std::string optString = "s:p:d:h";
+	const std::string optString = "s:p:h";
 	
-	const std::string opciones = "-s SERVER -p PORT -d DATA [-h]";
+	const std::string opciones = "-s SERVER -p PORT [-h]";
 
 	const std::string descripcion  = "Descripción:\n"
 		                             "\t-s   Nombre del servidor web\n"
 									 "\t-p   Puerto del servidor web\n"
-									 "\t-d   Datos a enviar\n"
 									 "\t-h   Muestra esta ayuda y termina\n";
 	
 	typedef struct args_t{
 		std::string SERVER;
 		uint16_t    PORT;
-		std::string DATA;
+		//agregar nombre archivo
 	} args_t;
 	
 	// 2) Modificar constructor
@@ -48,7 +47,6 @@ private:
 checkArgs::checkArgs(int _argc , char **_argv){
 	parametros.SERVER = "";
 	parametros.PORT   = 0;
-	parametros.DATA   = "";
 	
 	argc = _argc;
 	argv = _argv;
@@ -70,9 +68,6 @@ checkArgs::args_t checkArgs::getArgs(){
 			case 'p':
 					parametros.PORT = atoi(optarg);
 					break;
-			case 'd':
-					parametros.DATA = optarg;
-					break;
 			case 'h':
 			default:
 					printUsage();
@@ -81,8 +76,7 @@ checkArgs::args_t checkArgs::getArgs(){
 	}
 
 	if ( parametros.SERVER == "" ||
-		 parametros.PORT <= 0 ||
-		 parametros.DATA == "" ){
+		 parametros.PORT <= 0){
 		printUsage();
 		exit(EXIT_FAILURE);
 	}
