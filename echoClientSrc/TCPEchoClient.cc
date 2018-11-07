@@ -30,15 +30,13 @@ int main(int argc, char *argv[]) {
 	
     std::string servAddress; 
 	uint16_t    echoServPort;
-    std::string echoString [2];		//http request
-	uint32_t echoStringLen [2];   // Determine input length
+    std::string echoString;		//http request
+	uint32_t echoStringLen;   // Determine input length
 	
 	servAddress   = argumentos->getArgs().SERVER;
 	echoServPort  = argumentos->getArgs().PORT;
-	echoString[0] = "GET / HTTP/1.1\r\n";	//http request 
-	echoString[1] = "Host: " + servAddress + "\r\n\r\n";	//host
-	echoStringLen[0] = echoString[0].length();	//largo de ambos strings
-	echoStringLen[1] = echoString[1].length();
+	echoString = "GET / HTTP/1.1\r\nHost: " + servAddress + "\r\nConnection: close\r\n\r\n";	//http request con coneccion close.
+	echoStringLen = echoString.length();	//largo de ambos strings
 	
 	delete argumentos;
 
@@ -47,33 +45,31 @@ int main(int argc, char *argv[]) {
 		TCPSocket sock(servAddress, echoServPort);
 
 		// Send the string to the echo server
-		sock.send(echoString[0].c_str(), echoStringLen[0]);	//Se envía el request de http
-		sock.send(echoString[1].c_str(), echoStringLen[1]);	//y el host
+		sock.send(echoString.c_str(), echoStringLen);	//Se envía el request de http
 
 		char echoBuffer[RCVBUFSIZE + 1];    // Buffer for echo string + \0
 		uint32_t bytesReceived = 0;              // Bytes read on each recv()
 		uint32_t totalBytesReceived = 0;         // Total bytes read
 
 		// Receive the same string back from the server
-		std::cout << "Received: ";               // Setup to print the echoed string
+		std::cout << "Respuesta: " << std::endl;               // Setup to print the echoed string
 		while (true) {
 			// Receive up to the buffer size bytes from the sender
-			if ((bytesReceived = (sock.recv(echoBuffer, RCVBUFSIZE))) <= 0) {
-				std::cerr << "Unable to read";
-				exit(EXIT_FAILURE);
+			if ((bytesReceived = (sock.recv(echoBuffer, RCVBUFSIZE))) < 0) {
+				std::cerr << "No se puede leer.";
+				return(EXIT_FAILURE);
+			}else if(bytesReceived == 0){
+				std::cout << "\nRespuesta exitosa." << std::endl;
+				return(EXIT_SUCCESS);
 			}
 			totalBytesReceived += bytesReceived;     // Keep tally of total bytes
 			echoBuffer[bytesReceived] = '\0';        // Terminate the string!
 			std::cout << echoBuffer;                      // Print the echo buffer
 		}
-		std::cout << std::endl;
-
 		// Destructor closes the socket
 
 	} catch(SocketException &e) {
 		std::cerr << e.what() << std::endl;
-		exit(EXIT_FAILURE);
+		return(EXIT_FAILURE);
 	}
-
-	return EXIT_SUCCESS;
 }
