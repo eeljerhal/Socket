@@ -33,9 +33,12 @@ int main(int argc, char *argv[]) {
 	uint16_t    echoServPort;
     std::string echoString;		//http request
 	uint32_t echoStringLen;   // Determine input length
+	std::string nomArchivo;
 	
 	servAddress   = argumentos->getArgs().SERVER;
 	echoServPort  = argumentos->getArgs().PORT;
+	nomArchivo = argumentos->getArgs().ARCHIVO;
+
 	echoString = "GET / HTTP/1.1\r\nHost: " + servAddress + "\r\nConnection: close\r\n\r\n";	//http request con coneccion close.
 	echoStringLen = echoString.length();	//largo de ambos strings
 	
@@ -46,7 +49,7 @@ int main(int argc, char *argv[]) {
 		TCPSocket sock(servAddress, echoServPort);
 		// Instancia y creación del archivo
 		std::ofstream archivo;
-		archivo.open ("html.txt");
+		archivo.open (nomArchivo);
 
 		// Send the string to the echo server
 		sock.send(echoString.c_str(), echoStringLen);	//Se envía el request de http
@@ -56,23 +59,22 @@ int main(int argc, char *argv[]) {
 		uint32_t totalBytesReceived = 0;         // Total bytes read
 
 		// Receive the same string back from the server
-		std::cout << "Respuesta: " << std::endl;               // Setup to print the echoed string
+		std::cout << "Iniciando carga del contenido web..." << std::endl;               // Setup to print the echoed string
 		while (true) {
 			bytesReceived = (sock.recv(echoBuffer, RCVBUFSIZE));
 			
 			if (bytesReceived < 0) {
-				std::cerr << "No se puede leer.";
+				std::cerr << "No se puede leer." << std::endl;
 				archivo.close();	//cerrar archivo antes de salir
 				return(EXIT_FAILURE);
 			}else if(bytesReceived == 0){
-				std::cout << "\nFin de la respuesta." << std::endl;
 				archivo.close();		//cerrar archivo antes de salir
+				std::cout << "Se guardó el contenido en el archivo: " << nomArchivo << "\n" << std::endl;
 				return(EXIT_SUCCESS);
 			}
 
 			totalBytesReceived += bytesReceived;     // Keep tally of total bytes
 			echoBuffer[bytesReceived] = '\0';        // Terminate the string!
-			std::cout << echoBuffer;                      // Print the echo buffer
 			archivo << echoBuffer;	//Printear texto en el archivo
 		}
 		// Destructor closes the socket
