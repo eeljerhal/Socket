@@ -21,6 +21,7 @@
 #include "checkArgs.h"
 #include <iostream>    // For cerr and cout
 #include <cstdlib>     // For atoi()
+#include <fstream>
 
 const uint32_t RCVBUFSIZE = 32;    // Size of receive buffer
 
@@ -43,6 +44,9 @@ int main(int argc, char *argv[]) {
 	try {
 		// Establish connection with the echo server
 		TCPSocket sock(servAddress, echoServPort);
+		// Instancia y creación del archivo
+		std::ofstream archivo;
+		archivo.open ("html.txt");
 
 		// Send the string to the echo server
 		sock.send(echoString.c_str(), echoStringLen);	//Se envía el request de http
@@ -54,17 +58,22 @@ int main(int argc, char *argv[]) {
 		// Receive the same string back from the server
 		std::cout << "Respuesta: " << std::endl;               // Setup to print the echoed string
 		while (true) {
-			// Receive up to the buffer size bytes from the sender
-			if ((bytesReceived = (sock.recv(echoBuffer, RCVBUFSIZE))) < 0) {
+			bytesReceived = (sock.recv(echoBuffer, RCVBUFSIZE));
+			
+			if (bytesReceived < 0) {
 				std::cerr << "No se puede leer.";
+				archivo.close();	//cerrar archivo antes de salir
 				return(EXIT_FAILURE);
 			}else if(bytesReceived == 0){
-				std::cout << "\nRespuesta exitosa." << std::endl;
+				std::cout << "\nFin de la respuesta." << std::endl;
+				archivo.close();		//cerrar archivo antes de salir
 				return(EXIT_SUCCESS);
 			}
+
 			totalBytesReceived += bytesReceived;     // Keep tally of total bytes
 			echoBuffer[bytesReceived] = '\0';        // Terminate the string!
 			std::cout << echoBuffer;                      // Print the echo buffer
+			archivo << echoBuffer;	//Printear texto en el archivo
 		}
 		// Destructor closes the socket
 
