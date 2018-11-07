@@ -34,4 +34,5 @@
 # Otros
 .DS_Store
 ._*
-.txt
+*.txt
+Socket

@@ -2,7 +2,7 @@ CC=gcc
 CXX=g++
 RM=rm -f
 
-BIN=../echoClient
+BIN=../Socket
 
 INCLUDES=-I../includes
 LDFLAGS=
@@ -23,6 +23,7 @@ $(BIN): $(OBJS)
 	$(CXX) -o $@ $^ $(CXXFLAGS) $(LDLIBS) $(INCLUDES)
 
 $(DIR_OBJ)/%.o: %.cc
+	@mkdir -p $(DIR_OBJ)
 	$(CXX) -c -o $@ $< $(CXXFLAGS) $(LDLIBS) $(LDFLAGS) $(INCLUDES)
 
 clean:
