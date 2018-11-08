@@ -60,23 +60,22 @@ int main(int argc, char *argv[]) {
 
 		// Receive the same string back from the server
 		std::cout << "Iniciando carga del contenido web..." << std::endl;               // Setup to print the echoed string
-		while (true) {
-			bytesReceived = (sock.recv(echoBuffer, RCVBUFSIZE));
+		while ((bytesReceived = (sock.recv(echoBuffer, RCVBUFSIZE))) != 0) {
 			
 			if (bytesReceived < 0) {
 				std::cerr << "No se puede leer." << std::endl;
 				archivo.close();	//cerrar archivo antes de salir
 				return(EXIT_FAILURE);
-			}else if(bytesReceived == 0){
-				archivo.close();		//cerrar archivo antes de salir
-				std::cout << "Se guardó el contenido en el archivo: " << nomArchivo << "\n" << std::endl;
-				return(EXIT_SUCCESS);
 			}
 
 			totalBytesReceived += bytesReceived;     // Keep tally of total bytes
 			echoBuffer[bytesReceived] = '\0';        // Terminate the string!
 			archivo << echoBuffer;	//Printear texto en el archivo
 		}
+		
+		archivo.close();		//cerrar archivo antes de salir
+		std::cout << "Se guardó el contenido en el archivo: " << nomArchivo << "\n" << std::endl;
+		return(EXIT_SUCCESS);
 		// Destructor closes the socket
 
 	} catch(SocketException &e) {
